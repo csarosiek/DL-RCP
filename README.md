@@ -14,4 +14,4 @@ Production Use: MOACCWorkflow_final.py
 Dependencies:
   contourdata.py
   denseunet.py
-Reads the DICOM images and RTStructure Set, applies the trained model, and produces a second RT Structure Set with the updated contours. 
+Reads the DICOM images and RTStructure Set, applies the trained model, and produces a second RT Structure Set with the updated contours.
