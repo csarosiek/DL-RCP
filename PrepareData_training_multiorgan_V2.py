@@ -97,7 +97,7 @@ def make_data(p):
         if np.max(DLContour)==0:
             i+=1
             continue
-
+        ## Uncomment to plot the cropped data
         # if i%40 == 0:
         #     plt.imshow(MRslice,cmap='gray')
         #     plt.contour(GTContour,[0,1,2,3,4,5,6,7],cmap='tab10')
@@ -118,6 +118,7 @@ def make_data(p):
         im[0,:,:,1] = cv2.resize(DLContour,dsize=(ImageSize,ImageSize),interpolation=cv2.INTER_NEAREST).astype('uint8')
         im[0,:,:,2] = cv2.resize(GTContour,dsize=(ImageSize,ImageSize),interpolation=cv2.INTER_NEAREST).astype('uint8')
 
+        ## Uncomment to plot the preprocessed data
         # if i%40 == 0:
         #     plt.imshow(data[0,:,:,0],cmap='gray')
         #     plt.contour(data[0,:,:,1],[0,1,2,3,4,5,6,7],cmap='tab10')
@@ -137,3 +138,4 @@ if __name__ == '__main__':
         pool.map(make_data, range(len(patients)))
 
     #print(results)
+
