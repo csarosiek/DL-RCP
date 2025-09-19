@@ -1,17 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Dec 22 12:42:23 2023
-
-This file contains the QA and ACC workflow for the MOLAR R01 Grant.
-The full workflow is designed to fit within main.py in the function AdmireDLJob
-The AdmireDLJob will download an image set from ProKnow, push those images through
-Admire for DLAS, then upload the structure set back to ProKnow. We want to intercept
-the images and rtstruct file before the upload to perform our QA/ACC workflow.
-
-You need the following files to run all the necessary functions:
-1. tools/data.py
-2. contourdata.py -- contains functions to read the original dicom images
-3. denseunet.py -- contains the 2D ACC methods based on dense unet
+DL-RCP Production Code. Reads DICOM files and produces a new RTStructure Set with the updated contours. 
 
 @author: csarosiek
 """
@@ -125,18 +115,17 @@ def MOACC(image_path, rtstruct_path):#, gtstruct_path):
 
 
     ## After finishing with all organs, we save the RT struct with the new contours.
-    ## Currently will save RTstruct file as ACC_rtstruct.dcm. May want to overwrite file
+    ## Will save RTstruct file as [PATIENT]_[DATE].dcm. May want to overwrite file
     ## that's already there instead.
 
     rtstruct.save(os.path.join(outdir,patient+'_'+date+'.dcm'))
-    #rtstruct.save(os.path.join(struct_path,struct_file)) #overwrites ADMIRE rt struct
 
     return None
 
 
 times = []
-toppath = '/mnt/G/Physicist/people/Sarosiek/1_DenseUNet_DelRec/multiorgan_data/ApplicationTests/Manuscript2025/'
-outpath = '/mnt/G/Physicist/people/Sarosiek/1_DenseUNet_DelRec/multiorgan_data/ApplicationTests/Manuscript2025/MOACC-Clinical/'
+toppath = '/mnt/G/Physicist/people/Sarosiek/1_DenseUNet_DelRec/multiorgan_data/ApplicationTests/Manuscript2025/' #Path to DICOM Data
+outpath = '/mnt/G/Physicist/people/Sarosiek/1_DenseUNet_DelRec/multiorgan_data/ApplicationTests/Manuscript2025/MOACC-Clinical/' #Path to save new structures
 patients = os.listdir(toppath+'MRL')
 for patient in patients:
 
@@ -153,15 +142,9 @@ for patient in patients:
     
         start = time.time()
     
-        MOACC(image_path, rtstruct_path)#,gtstruct_path) ## Uncomment to run multi-organ 2d acc
+        MOACC(image_path, rtstruct_path)#,gtstruct_path)
     
         end = time.time()
         times.append(end-start)
 
 print('times',times)
-#image_path = 'C:/Users/Elekta/Desktop/ProknowListener_Dan/tmp/20231229150211063244-STL_MCW_API_TEST-job_autoseg1-blv32cid/input/MR.2.16.840.1.114362.1.11786368.23176359453.563929256.653.3/'
-#rtstruct_path = 'C:/Users/Elekta/Desktop/ProknowListener_Dan/tmp/20231229150211063244-STL_MCW_API_TEST-job_autoseg1-blv32cid/results/'
-
-
-#ACC = QAACC(image_path,rtstruct_path)
-#print(ACC.shape)
