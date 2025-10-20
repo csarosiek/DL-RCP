@@ -6,8 +6,8 @@ Created on Mon Sep 30 13:47:12 2019
 DL-RCP Model Training
 
 Required Files to run:
-    LoadData_v3_aug.py
-    DataGenerator_v3_aug.py
+    LoadData_v4_python_aug.py
+    DataGenerator_v4_multiorgan.py
     DenseLayers.py
 
 @author: csarosiek
@@ -289,4 +289,5 @@ df.to_csv(log_path+'/d-unet_model_history.csv')
 
 
 ### eof
+
 
