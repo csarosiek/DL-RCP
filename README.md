@@ -4,14 +4,10 @@ The DL-RCP tool uses a deep learning model to improve contour quality. It is ins
 This repository holds the code required to 1) preprocess training data, 2) train a model, and 3) use the DL-RCP tool in production. 
 
 ## Python Dependencies:
-os
-
+os \n
 numpy
-
 rt_utils
-
 scipy
-
 time
 
 pydicom
