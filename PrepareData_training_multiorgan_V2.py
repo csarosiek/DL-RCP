@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 import multiprocessing
 
 init = 'RR_CT'
-GT_path = 'G:/Physicist/people/DLAS/DICOM/MRL/BTFE_F_DELREC/training/orig/GT/'
-Init_path = 'G:/Physicist/people/DLAS/DICOM/MRL/BTFE_F_DELREC/training/orig/'+init
+GT_path = 'G:/Physicist/people/DLAS/DICOM/MRL/BTFE_F_DELREC/training/orig/GT/' ## Ground Truth data path
+Init_path = 'G:/Physicist/people/DLAS/DICOM/MRL/BTFE_F_DELREC/training/orig/'+init  ## Initial contour data path
 patients = os.listdir(GT_path)
 
 data_dir = 'G:/Physicist/people/Sarosiek/1_DenseUNet_DelRec/multiorgan_data/organs_7/training_crop256_resize128/'+init
@@ -29,7 +29,7 @@ try:
 except:
     pass
 
-
+## Change the Organ list to include the correct organs. 
 organlist = ['Duodenum','Stomach','Colon','Bowel_Small','Liver','Kidney_R','Kidney_L']#['Duodenum','Stomach','Colon','Bowel_Small']
 c = 0
 # for organID in organlist:
@@ -138,4 +138,5 @@ if __name__ == '__main__':
         pool.map(make_data, range(len(patients)))
 
     #print(results)
+
 
