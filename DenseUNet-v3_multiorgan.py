@@ -3,10 +3,7 @@
 """
 Created on Mon Sep 30 13:47:12 2019
 
-Based on the original UNet model developed by Jie Ding.
-
-I added functions that added Dense blocks and I rearraged the code a bit.
-The data is preprocessed by PrepareData_v6.py
+DL-RCP Model Training
 
 Required Files to run:
     LoadData_v3_aug.py
@@ -292,3 +289,4 @@ df.to_csv(log_path+'/d-unet_model_history.csv')
 
 
 ### eof
+
