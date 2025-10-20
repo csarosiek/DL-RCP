@@ -61,21 +61,22 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 #launch=os.getcwd()
 #os.environ["CUDA_PATH"]=''
 #os.environ["CUDA_PATH_V11_4"]=''
-#os.environ["CUDA_VISIBLE_DEVICES"]='-1' #"0"
+os.environ["CUDA_VISIBLE_DEVICES"]='-1' # Change to find the GPU
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
-NUM_CHANNELS = 8
-#BATCH_SIZE3D = 3 # number of scans for batch in training. From 3 scans get 50 slices
-BATCH_SIZE = 16  # need change later
-
-VAL_BATCH = 16  # need change later
-IMG_HEIGHT = 128
-IMG_WIDTH = 128
+## Define the hyperparameters here:
+NUM_CHANNELS = 8 
+BATCH_SIZE = 16  # Can adjust
+VAL_BATCH = BATCH_SIZE
+IMG_HEIGHT = 128 # Defined in the Preprocessing Code
+IMG_WIDTH = IMG_HEIGHT
 KERNEL_SIZE = 3
-NUM_CLASSES = 8 # 7 organs = 8
+NUM_CLASSES = 8 # Number of organs plus 1 for background (8 = 7 organs + 1 background)
 DR = 0.0 ## DROPOUT RATE
+EPOCHS = 1000 ## Number of epochs to train for
+LR = 5e-5 ## Learning Rate
 
-#organ = 'Stomach'
+## Define the directories here:
 folder = 'G:/Physicist/people/Sarosiek/1_DenseUNet_DelRec/multiorgan_data/organs_7/training_pad40_resize128/'
 train_path = folder+'/training/'
 test_path = folder+'/validation/'
@@ -102,13 +103,7 @@ training_y = np.empty((training.image_all.shape[0], training.image_all.shape[1],
 training_x=training.image_all[:,:,:,0:2] #Slice data and DL contour
 training_y=training.image_all[:,:,:,2] #Good contour
 
-# training_x = np.empty((training.shape[0], training.shape[1], training.shape[2], 2))
-# training_y = np.empty((training.shape[0], training.shape[1], training.shape[2], 1))
 
-# training_x=training[:,:,:,0:2]
-# training_y=training[:,:,:,2]
-
-#training_y=np.expand_dims(training_y, axis=-1)
 training_y[training_y > 7] = 0
 
 training_x=training_x.astype('float32')
@@ -129,15 +124,13 @@ data_gen_args = dict(rotation_range=45,
                     height_shift_range=0.3,
                     width_shift_range=0.3
                   )
-#shear_range=45.0,
-#height_shift_range=0.3,
-                   # width_shift_range=0.3,
+
 image_datagen = ImageDataGenerator(**data_gen_args)
 mask_datagen = ImageDataGenerator(**data_gen_args)
 
 seed = 1
 
-#BATCH_SIZE=32
+
 image_generator = image_datagen.flow(training_x, seed=seed, batch_size=BATCH_SIZE, shuffle=True)
 mask_generator = mask_datagen.flow(training_y, seed=seed, batch_size=BATCH_SIZE, shuffle=True)
 
@@ -232,7 +225,7 @@ outputs = Conv2D(NUM_CLASSES, (1, 1), activation='softmax') (c9) #softmax? sigmo
 
 model = Model(inputs=[inputs], outputs=[outputs])
 
-model.compile(optimizer=Adam(5e-5),
+model.compile(optimizer=Adam(LR),
               loss=CategoricalCrossentropy(), #
               metrics=['categorical_accuracy',TopKCategoricalAccuracy(k=5),
                        Recall(class_id=1,name='recall_1'),Recall(class_id=2,name='recall_2'),Recall(class_id=3,name='recall_3'),Recall(class_id=4,name='recall_4'),
@@ -257,38 +250,8 @@ checkpoint.set_model(model)
 #     model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
 #results = model.fit_generator(train_generator, steps_per_epoch=(len(training_x) // BATCH_SIZE), epochs=10, validation_data=validation_generator, use_multiprocessing=False,workers=6,callbacks=[tensorboard, checkpoint])
-results = model.fit(train_generator, steps_per_epoch=(len(training_x) // BATCH_SIZE), epochs=1000, validation_data=validation_generator, use_multiprocessing=False,workers=6,callbacks=[tensorboard, checkpoint])
+results = model.fit(train_generator, steps_per_epoch=(len(training_x) // BATCH_SIZE), epochs=EPOCHS, validation_data=validation_generator, use_multiprocessing=False,workers=6,callbacks=[tensorboard, checkpoint])
 
-# #steps_per_epoch=250, validation_steps=200
-# val_loss = results.history['val_loss']
-# loss = results.history['loss']
-# bin_acc = results.history['categorical_accuracy']
-# val_bin_acc = results.history['val_categorical_accuracy']
-# recall0 = results.history['recall_1']
-# val_recall0 = results.history['val_recall_1']
-# precision0 = results.history['precision_1']
-# val_precision0 = results.history['val_precision_1']
-# recall = results.history['recall_2']
-# val_recall = results.history['val_recall_2']
-# precision = results.history['precision_2']
-# val_precision = results.history['val_precision_2']
-# recall = results.history['recall_3']
-# val_recall = results.history['val_recall_3']
-# precision = results.history['precision_3']
-# val_precision = results.history['val_precision_3']
-# recall = results.history['recall_4']
-# val_recall = results.history['val_recall_4']
-# precision = results.history['precision_4']
-# val_precision = results.history['val_precision_4']
-# epochs = range(0,len(val_loss))
-
-# F1 = []
-# val_F1 = []
-# i = 0
-# while i < len(epochs):
-#     F1.append((2*recall[i]*precision[i])/(recall[i]+precision[i]))
-#     val_F1.append((2*val_recall[i]*val_precision[i])/(val_recall[i]+val_precision[i]+1e-7))
-#     i += 1
 
 # plt.plot(epochs,loss,'-',label='loss')
 # plt.plot(epochs,val_loss,'-',label='val_loss')
@@ -320,30 +283,12 @@ results = model.fit(train_generator, steps_per_epoch=(len(training_x) // BATCH_S
 # plt.savefig(log_path+'/d-unet_model_bin_acc.png', bbox_inches='tight',dpi=600)
 # plt.show()
 
+
+## Print training results to a csv file. 
 df = pd.DataFrame(results.history)
 df.to_csv(log_path+'/d-unet_model_history.csv')
 
-# minepoch = np.argmin(val_loss)
 
-# print('log path:',log_path)
-# print('training length:',len(training_x))
-# print('Total number of epochs ran:', epochs)
-# print('batchsize:',BATCH_SIZE)
-# print('Training Shape:',training_x.shape)
-# print('Min Epoch:', minepoch)
-# print('Train loss:',loss[minepoch])
-# print('Train accuracy:',bin_acc[minepoch])
-# print('Train Recall 0:',recall0[minepoch])
-# print('Train Recall 1:',recall[minepoch])
-# print('Train Precision 0:',precision0[minepoch])
-# print('Train Precision 1:',precision[minepoch])
-# print('Train F1:',F1[minepoch])
-# print('Val loss:',val_loss[minepoch])
-# print('Val accuracy:',val_bin_acc[minepoch])
-# print('Val Recall 0:',val_recall0[minepoch])
-# print('Val Recall 1:',val_recall[minepoch])
-# print('Val Precision 0:',val_precision0[minepoch])
-# print('Val Precision 1:',val_precision[minepoch])
-# print('Val F1:',val_F1[minepoch])
+
 
 ### eof
