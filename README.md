@@ -30,7 +30,6 @@ pandas
 ## Preprocessing Code: 
 PrepareData_training_multiorgan_V2.py
 
-### Use
 Reads the DICOM Image and RT Structure files and preprocesses them for DL-RCP training. Saves each slice as a .npy file. 
 
 To use, change the GT_path and Init_path variables to the paths with the ground truth RTSS and the inaccurate initial RTSS, respectively. Within each of these paths, there should be identical list of directories with the patient labels. The code will match the patients between each directory. 
