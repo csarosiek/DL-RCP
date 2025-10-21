@@ -43,13 +43,13 @@ Uses multiprocessing to process multiple DICOM images at a time and speed up pro
 Also included are lines to plot the data throughout the preprocessing method that can be useful for troubleshooting. These are currently commented out. 
 
 ## Model Training Code: 
-DenseUNet-v3_multiorgan.py
+DenseUNet-v3_multiorgan-40.py
 
 Dependencies: LoadData_v4_python_aug.py, DataGenerator_v4_multiorgan.py, DenseLayers.py
   
-Model architecture inspired by a 2D Dense UNet model. 
+Model architecture inspired by a 2D Dense UNet model. The model uses the Adam Optimizer with Categorical Crossentropy loss. 
 
-To train, update the hyperparameters in Lines 65-74 and the directories in Lines 77-80. 
+To train, update the hyperparameters and directories. As written, the code will save the model every 100 epochs and at the Epoch with the lowest validation loss value. 
 
 ## Production Use: 
 MOACCWorkflow_final.py
