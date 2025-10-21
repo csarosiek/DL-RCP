@@ -27,8 +27,7 @@ multiprocessing
 pandas
 
 
-## Preprocessing Code: 
-PrepareData_training_multiorgan_V2.py
+## Preprocessing Code: PrepareData_training_multiorgan_V2.py
 
 Reads the DICOM Image and RT Structure files and preprocesses them for DL-RCP training. Saves each slice as a .npy file. 
 
@@ -42,8 +41,7 @@ Uses multiprocessing to process multiple DICOM images at a time and speed up pro
 
 Also included are lines to plot the data throughout the preprocessing method that can be useful for troubleshooting. These are currently commented out. 
 
-## Model Training Code: 
-DenseUNet-v3_multiorgan-40.py
+## Model Training Code: DenseUNet-v3_multiorgan-40.py
 
 Dependencies: LoadData_v4_python_aug.py, DataGenerator_v4_multiorgan.py, DenseLayers.py
   
@@ -51,8 +49,7 @@ Model architecture inspired by a 2D Dense UNet model. The model uses the Adam Op
 
 To train, update the hyperparameters and directories. As written, the code will save the model every 100 epochs and at the Epoch with the lowest validation loss value. 
 
-## Production Use: 
-MOACCWorkflow_final.py
+## Production Use: MOACCWorkflow_final.py
 
 Dependencies: contourdata.py, denseunet.py
   
