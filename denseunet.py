@@ -379,9 +379,9 @@ def ApplyDenseUNetACC(MRvolume,contourvolume,organ,categories):
 
 def ApplyDenseUNetACC_multiorgan(MRvolume,contourvolume):
     print('Dense UNet Start')
-    path = './multiorgan_data/organs_7/model_optimal/'
+    path = './model_optimal/'
     multiorganmodel = None
-    multiorganmodel = load_model(path+'ACC_multiorgan.h5',compile=False)
+    multiorganmodel = load_model(path+'DLRCP_multiorgan.h5',compile=False)
     print('DU Model loaded')
 
     ##Setup New Contour Volume
@@ -414,3 +414,4 @@ def ApplyDenseUNetACC_multiorgan(MRvolume,contourvolume):
     return ACCcontourVolume
 
 ##EOF
+
