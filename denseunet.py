@@ -4,7 +4,7 @@ Created on Wed Aug 10 11:02:34 2022
 
 Dense UNet Correction
 This script contains all the functions necessary to apply the dense unet 2D
-ACC method to the contours.
+DL-RCP method to the contours.
 
 @author: csarosiek
 """
@@ -414,4 +414,5 @@ def ApplyDenseUNetACC_multiorgan(MRvolume,contourvolume):
     return ACCcontourVolume
 
 ##EOF
+
 
