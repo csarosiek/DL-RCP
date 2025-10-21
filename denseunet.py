@@ -17,22 +17,7 @@ import scipy.io as sio
 import matplotlib.pyplot as plt
 
 
-def ModelLoad(organ):
-    path = './data/FinalWorkflowModels/'
-    os.environ["CUDA_VISIBLE_DEVICES"]= '-1'
-    #print(os.path.isfile(path+'dunet_minor_'+organ+'.h5'))
-    try:
-        minorDU = load_model(path+'ACC_'+organ+'_Minor.h5',compile=False)
-    except:
-        print('No minor Model')
-        minorDU = None
-    try:
-        majorDU = load_model(path+'ACC_'+organ+'_Major.h5',compile=False)
-    except:
-        print('No major model')
-        majorDU = None
 
-    return minorDU, majorDU
 
 def IntensityClip(array,percentile):
     hist = np.histogram(np.ndarray.flatten(array),bins=200)
@@ -195,23 +180,7 @@ def PrepareDUSlice(imageslice, contourslice, organ, pad=20, ImageSize=64):
     #print('DU Slice Prepared')
     return im, limits
 
-def DUprediction(data, organ, category, minorDU, majorDU):
-    data = data.astype('float32')
 
-    # if 'Duo' in organ or 'mall' in organ:
-    #     data = (data-np.min(data))/(np.absolute(np.max(data)-np.min(data)))
-    # else:
-    #     data[0,:,:,0] = (data[0,:,:,0]-np.min(data[0,:,:,0]))/(np.absolute(np.max(data[0,:,:,0])-np.min(data[0,:,:,0])))
-
-    data[0,:,:,0] = (data[0,:,:,0]-np.min(data[0,:,:,0]))/(np.absolute(np.max(data[0,:,:,0])-np.min(data[0,:,:,0])))
-    data[0,:,:,1] = (data[0,:,:,1]-np.min(data[0,:,:,1]))/(np.absolute(np.max(data[0,:,:,1])-np.min(data[0,:,:,1])))
-
-    if category == 2:
-        DLCorr=minorDU.predict_on_batch(data)
-    elif category == 3:
-        DLCorr=majorDU.predict_on_batch(data)
-    #print('DU predict')
-    return DLCorr
 
 
 def DUprediction_multiorgan(data, model):
@@ -225,24 +194,6 @@ def DUprediction_multiorgan(data, model):
     return DLCorr
 
 
-def UpSize(DLCorr, originalcontour, limits, thresh=0.5):
-    extent0 = limits[1] - limits[0]
-    extent1 = limits[3] - limits[2]
-
-    ## Resize back to original size
-    DLcorr_resize = cv2.resize(DLCorr[0,:,:,1],dsize=(extent1,extent0),interpolation=cv2.INTER_CUBIC)
-    t = np.ones(DLcorr_resize.shape)*thresh
-    DLcorr_resize_mask = np.greater_equal(DLcorr_resize, t)
-
-    ## Combine back into full slice and save as npy format
-    corr_slice = originalcontour
-    #plt.imshow(corr_slice)
-    #print(limits)
-    corr_slice[limits[0]:limits[1],limits[2]:limits[3]] = DLcorr_resize_mask
-    #plt.contour(corr_slice,0,colors='black')
-    #plt.show()
-    #print('upsize complete')
-    return corr_slice
 
 def UpSize_multiorgan(DLCorr, originalcontour, limits, thresh=0.5):
     extent0 = limits[1] - limits[0]
@@ -270,110 +221,6 @@ def UpSize_multiorgan(DLCorr, originalcontour, limits, thresh=0.5):
     #plt.show()
     #print('upsize complete')
     return corr_slice
-
-
-def ApplyDenseUNetACC(MRvolume,contourvolume,organ,categories):
-    print('Dense UNet Start')
-    ## Load the models for that organ
-    minorDU = None
-    majorDU = None
-    minorDU, majorDU = ModelLoad(organ)
-    print('DU Models loaded')
-
-    ##Setup New Contour Volume
-    ACCcontourVolume = contourvolume.astype(int)
-
-    ##Volumetric Preprocessing:
-    #MRvolume = MRvolume - np.min(MRvolume)
-
-    i = 0
-    while i < MRvolume.shape[2]:
-        MRslice = MRvolume[:,:,i]
-        category = categories[-1*i-1]
-        DLContour = contourvolume[:,:,-1*i-1].astype(int)
-        # plt.imshow(MRslice,cmap='gray')
-        # plt.contour(DLContour,0,colors='green')
-        # plt.title(str(category))
-        # plt.show()
-
-        if np.max(DLContour) == 0:
-            i += 1
-            continue
-        #print(category)
-        if category != 2 and category!=3:
-            #skip any slice that doesn't require minor/major edits
-            #print('skipping acceptable')
-            i += 1
-            continue
-        elif category == 2 and minorDU == None:
-            #skip any slice that we don't have a minor model for
-            print('skipping minor')
-            i += 1
-            continue
-        elif category == 3 and majorDU == None:
-            #skip any slice that we don't have a major model for
-            print('skipping major')
-            i += 1
-            continue
-        else:
-            #print('correcting slice')
-            MRslice = MRslice - np.min(MRslice)
-            #MRslice = IntensityClip(MRslice,0.99)
-            #MRslice = Normalize(MRslice,1200)
-
-            if organ == 'Duodenum' and category == 3:
-                PAD = 75
-                IMAGESIZE = 128
-            else:
-                PAD = 40
-                IMAGESIZE = 64
-
-            # print(organ)
-            # print(category)
-            # print(PAD)
-            # print(IMAGESIZE)
-            data, limits = PrepareDUSlice(MRslice, DLContour, organ, pad=PAD, ImageSize=IMAGESIZE)
-            DLCorr = DUprediction(data, organ, category, minorDU, majorDU)
-
-            #print(np.max(DLCorr[0,:,:,1]))
-
-            # plt.imshow(DLCorr[0,:,:,1])
-            # plt.contour(data[0,:,:,1],0,colors='black')
-            # plt.show()
-
-            ACCcontour = UpSize(DLCorr,DLContour,limits, thresh=0.5)
-            #if np.max(ACCcontour) == 0:
-                #print('ACC deleted contour')
-                #ACCcontour = DLContour
-            #except:
-            #    print('DenseUNet ACC failed on slice')
-            #    ACCcontour = DLContour
-        #if 'owel' in organ:
-        #    ACCcontour = ACCcontour + DLContour
-        #    ACCcontour[ACCcontour>0] = 1
-
-        #ACCcontour = cv2.medianBlur(ACCcontour.astype('float32'),5)
-
-        # plt.imshow(MRslice,cmap='gray')
-        # plt.contour(DLContour,1,colors='green')
-        # plt.contour(ACCcontour,0,colors='red')
-        # #plt.imshow(ACCcontour - DLContour, vmin = -1, vmax = 1)
-        # plt.title(str(category))
-        # plt.show()
-
-        #print(np.max(ACCcontour-DLContour), np.min(ACCcontour-DLContour))
-        ACCcontourVolume[:,:,-1*i-1] = ACCcontour
-        i += 1
-
-    # i = 0
-    # while i < ACCcontourVolume.shape[2]:
-    #     A = ACCcontourVolume[:,:,i]
-    #     A = cv2.medianBlur(A.astype('float32'),5)
-    #     ACCcontourVolume[:,:,i] = A
-    #     i += 1
-    ACCcontourVolume = ACCcontourVolume.astype(bool)
-    print('2D ACC complete')
-    return ACCcontourVolume
 
 
 
@@ -414,5 +261,6 @@ def ApplyDenseUNetACC_multiorgan(MRvolume,contourvolume):
     return ACCcontourVolume
 
 ##EOF
+
 
 
