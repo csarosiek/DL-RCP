@@ -55,4 +55,4 @@ Dependencies: contourdata.py, denseunet.py
   
 Reads the DICOM images and RTStructure Set, applies the trained model, and produces a second RT Structure Set with the updated contours.
 
-To run, change the directories in Lines 127-128. The code will look for the following model './multiorgan_data/organs_7/model_optimal/ACC_multiorgan.h5'
+To run, change the directories in Lines 127-128. The code will look for the following model './model_optimal/DLRCP_multiorgan.h5'
