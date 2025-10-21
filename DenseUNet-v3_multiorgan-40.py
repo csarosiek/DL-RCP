@@ -3,14 +3,14 @@
 """
 Created on Mon Sep 30 13:47:12 2019
 
-Based on the original UNet model developed by Jie Ding. 
+Deep Learning-based Contour Propagation
 
 I added functions that added Dense blocks and I rearraged the code a bit. 
-The data is preprocessed by PrepareData_v6.py
+The data is preprocessed by PrepareData_training_multiorgan_V2.py
 
 Required Files to run:
-    LoadData_v3_aug.py
-    DataGenerator_v3_aug.py
+    LoadData_v4_python_aug.py
+    DataGenerator_v4_multiorgan.py
     DenseLayers.py
 
 @author: csarosiek
@@ -64,27 +64,27 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 #os.environ["CUDA_VISIBLE_DEVICES"]='-1' #"0"
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
+## SET HYPERPARAMETERS HERE:
 NUM_CHANNELS = 8
-#BATCH_SIZE3D = 3 # number of scans for batch in training. From 3 scans get 50 slices
 BATCH_SIZE = 8  # need change later
 
 VAL_BATCH = BATCH_SIZE  # need change later
 print('BatchSize',BATCH_SIZE)
-IMG_HEIGHT = 128
+IMG_HEIGHT = 128 # Preprocessed data dimensions
 IMG_WIDTH = 128
 KERNEL_SIZE = 3
-NUM_CLASSES = 8 # 7 organs = 8
+NUM_CLASSES = 8 # 7 organs + 1 background = 8
 DR = 0.0 ## DROPOUT RATE
-EPOCHS = 801
-LR = 5e-4
+EPOCHS = 801 ## NUMBER OF TRAINING EPOCHS
+LR = 5e-4 ## LEARNING RATE
 
 print('DR',DR)
 print('Epochs',EPOCHS)
 print('LR',LR)
 
-#organ = 'Stomach'
+## SET DIRECTORIES HERE:
 folder = '/scratch/g/epaulson/Sarosiek/Multiorgan/'
-train_path = folder+'data/training/'
+train_path = folder+'data/training/' 
 test_path = folder+'data/validation/'
 log_path = folder+'output/temp-'+time.strftime("%Y%m%d-%H%M%S")+'-40/'
 
@@ -272,7 +272,7 @@ loss = results.history['loss']
 bin_acc = results.history['categorical_accuracy']
 val_bin_acc = results.history['val_categorical_accuracy']
 
-
+## PLOT TRAINING CURVES
 plt.plot(epochs,loss,'-',label='loss')
 plt.plot(epochs,val_loss,'-',label='val_loss')
 plt.legend()
